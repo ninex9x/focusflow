@@ -76,7 +76,9 @@ test("a configuração pública não contém dados privados de implantação", a
   assert.match(dockerignore, /^\.env$/m);
   assert.match(publishScript, /process\.env\.FOCUSFLOW_UPDATE_HOST/);
   assert.doesNotMatch(publishScript, /const host = argument\("--host",\s*"[^"\s]+"\)/);
-  assert.equal(typeof packageJson.author, "string");
+  assert.equal(packageJson.author.email, "170105990+ninex9x@users.noreply.github.com");
+  assert.match(packageJson.scripts["desktop:windows"], /--publish never/);
+  assert.match(packageJson.scripts["desktop:linux"], /--publish never/);
 });
 
 test("a interface reparte a estimativa do projeto entre subtarefas", async () => {

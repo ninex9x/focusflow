@@ -2,7 +2,10 @@
   "name": "focusflow",
   "version": "1.4.4",
   "description": "Controle de tempo com sincronização segura pelo backend FocusFlow.",
-  "author": "FocusFlow contributors",
+  "author": {
+    "name": "FocusFlow contributors",
+    "email": "170105990+ninex9x@users.noreply.github.com"
+  },
   "homepage": "https://github.com/ninex9x/tempo-app-public",
   "desktopName": "FocusFlow",
   "private": true,
@@ -18,8 +21,8 @@
     "desktop:dev": "electron .",
     "desktop:icon": "node scripts/generate-desktop-icon.mjs",
     "desktop:dir": "electron-builder --dir",
-    "desktop:windows": "electron-builder --win nsis",
-    "desktop:linux": "electron-builder --linux AppImage deb",
+    "desktop:windows": "electron-builder --win nsis --publish never",
+    "desktop:linux": "electron-builder --linux AppImage deb --publish never",
     "updates:prepare": "node scripts/prepare-updates.mjs",
     "updates:publish": "node scripts/publish-updates.mjs"
   },
