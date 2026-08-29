@@ -6,11 +6,11 @@ services:
     expose:
       - "3000"
     environment:
-      ALLOWED_ORIGINS: "${ALLOWED_ORIGINS:?Defina ALLOWED_ORIGINS no arquivo .env}"
-      REQUIRE_ACCESS_AUTH: "${REQUIRE_ACCESS_AUTH:-true}"
+      ALLOWED_ORIGINS: "${ALLOWED_ORIGINS:-}"
+      REQUIRE_ACCESS_AUTH: "${REQUIRE_ACCESS_AUTH:-false}"
       LEGACY_OWNER_EMAIL: "${LEGACY_OWNER_EMAIL:-}"
-      TEAM_DOMAIN: "${TEAM_DOMAIN:?Defina TEAM_DOMAIN no arquivo .env}"
-      POLICY_AUD: "${POLICY_AUD:?Defina POLICY_AUD no arquivo .env}"
+      TEAM_DOMAIN: "${TEAM_DOMAIN:-}"
+      POLICY_AUD: "${POLICY_AUD:-}"
       UPDATES_ROOT: "/app/updates"
     volumes:
       - focusflow-data:/app/data

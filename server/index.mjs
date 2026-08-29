@@ -71,6 +71,18 @@ function requestIdentity(authenticatedUser, requireAccessAuth) {
   };
 }
 
+function isSameOriginRequest(request, origin) {
+  try {
+    const forwardedHost = String(request.headers["x-forwarded-host"] || "").split(",")[0].trim();
+    const host = forwardedHost || String(request.headers.host || "").trim();
+    const forwardedProtocol = String(request.headers["x-forwarded-proto"] || "").split(",")[0].trim();
+    const protocol = forwardedProtocol || (request.socket.encrypted ? "https" : "http");
+    return Boolean(host) && new URL(origin).origin === new URL(`${protocol}://${host}`).origin;
+  } catch {
+    return false;
+  }
+}
+
 export function createFocusFlowServer(options = {}) {
   const staticRoot = resolve(options.staticRoot || process.env.STATIC_ROOT || projectRoot);
   const dataFile = resolve(options.dataFile || process.env.DATA_FILE || resolve(projectRoot, "data", "focusflow.sqlite"));
@@ -154,7 +166,7 @@ export function createFocusFlowServer(options = {}) {
     const corsHeaders = {};
 
     if (origin) {
-      if (!allowedOrigins.has(origin)) {
+      if (!allowedOrigins.has(origin) && !isSameOriginRequest(request, origin)) {
         sendJson(response, 403, { error: "Origem não permitida." });
         return;
       }
@@ -316,7 +328,9 @@ export function createFocusFlowServer(options = {}) {
       const headers = {
         ...corsHeaders,
         "Content-Type": contentTypes[extname(filePath)] || "application/octet-stream",
-        "Cache-Control": filePath.endsWith("service-worker.js") ? "no-cache" : "public, max-age=300",
+        "Cache-Control": process.env.NODE_ENV === "production" && !filePath.endsWith("service-worker.js")
+          ? "public, max-age=300"
+          : "no-store",
         "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; manifest-src 'self'",
         "Referrer-Policy": "no-referrer",
         "X-Content-Type-Options": "nosniff",

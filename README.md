@@ -11,8 +11,13 @@ npm install
 npm run dev
 ```
 
-Abra `http://localhost:4173`. Por padrão, a interface usa a API na mesma origem.
-Configure um proxy local ou execute o backend para carregar e alterar dados.
+Abra `http://127.0.0.1:3000`. Esse comando inicia a interface, a API e um banco
+SQLite local em `data/focusflow.sqlite`. Não é necessário criar `.env`, configurar
+Cloudflare ou instalar outro banco para desenvolver localmente.
+
+O modo local escuta apenas no computador, usa o perfil `Usuário local` e não
+possui autenticação. Para servir somente os arquivos estáticos, sem API, use
+`npm run dev:web` e abra `http://127.0.0.1:4173`.
 
 Para gerar os arquivos web estáticos:
 
@@ -56,23 +61,28 @@ token opaco em uma asserção assinada para o backend.
 ## Servidor
 
 O `compose.yaml` executa a aplicação e um Nginx sem privilégios. O SQLite fica
-em um volume persistente. O serviço escuta somente em `127.0.0.1:8091`; o HTTPS
-é terminado pelo Cloudflare e o tráfego chega pelo Cloudflare Tunnel.
+em um volume persistente e o serviço escuta somente em `127.0.0.1:8091`.
 
-Copie o modelo de configuração e preencha os valores apenas no ambiente
-privado. O arquivo `.env` é ignorado pelo Git:
+Para iniciar localmente com Docker, sem configuração adicional:
+
+```bash
+docker compose up -d --build
+```
+
+Abra `http://127.0.0.1:8091`.
+
+Em produção, o HTTPS pode ser terminado pelo Cloudflare e o tráfego encaminhado
+por um Cloudflare Tunnel. Nesse caso, copie o modelo de configuração e preencha
+os valores apenas no ambiente privado. O arquivo `.env` é ignorado pelo Git:
 
 ```bash
 cp .env.example .env
 ```
 
-As variáveis `ALLOWED_ORIGINS`, `TEAM_DOMAIN` e `POLICY_AUD` são obrigatórias
-quando a autenticação está ativa. `LEGACY_OWNER_EMAIL` é opcional e deve ser
-usada somente durante uma migração de dados legados.
-
-```bash
-docker compose up -d --build
-```
+Defina `REQUIRE_ACCESS_AUTH=true` somente em conjunto com `TEAM_DOMAIN` e
+`POLICY_AUD`. `ALLOWED_ORIGINS` aceita origens adicionais separadas por vírgula;
+a origem da própria aplicação é aceita automaticamente. `LEGACY_OWNER_EMAIL` é
+opcional e deve ser usada somente durante uma migração de dados legados.
 
 Nunca versione `.env`, bancos SQLite, certificados, instaladores ou arquivos de
 assinatura. Consulte [SECURITY.md](SECURITY.md) antes de publicar uma cópia do

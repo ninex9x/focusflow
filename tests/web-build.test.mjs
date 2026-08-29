@@ -67,9 +67,11 @@ test("a configuração pública não contém dados privados de implantação", a
     read("scripts/publish-updates.mjs"),
     read("package.json").then(JSON.parse),
   ]);
-  assert.match(compose, /POLICY_AUD:\s*"\$\{POLICY_AUD:/);
+  assert.match(compose, /POLICY_AUD:\s*"\$\{POLICY_AUD:-\}"/);
+  assert.match(compose, /REQUIRE_ACCESS_AUTH:\s*"\$\{REQUIRE_ACCESS_AUTH:-false\}"/);
   assert.doesNotMatch(compose, /POLICY_AUD:\s*"[a-f0-9]{32,}"/i);
   assert.match(environmentExample, /replace-with-your-cloudflare-access-audience/);
+  assert.match(environmentExample, /^REQUIRE_ACCESS_AUTH=false$/m);
   assert.match(gitignore, /^\.env$/m);
   assert.match(gitignore, /^\.secrets\/$/m);
   assert.match(gitignore, /^\*\.apk$/m);
@@ -77,6 +79,10 @@ test("a configuração pública não contém dados privados de implantação", a
   assert.match(publishScript, /process\.env\.FOCUSFLOW_UPDATE_HOST/);
   assert.doesNotMatch(publishScript, /const host = argument\("--host",\s*"[^"\s]+"\)/);
   assert.equal(packageJson.author.email, "170105990+ninex9x@users.noreply.github.com");
+  assert.equal(packageJson.scripts.dev, "node server/index.mjs");
+  assert.equal(packageJson.scripts.start, "node server/index.mjs");
+  assert.equal(packageJson.scripts["dev:web"], "node scripts/serve.mjs");
+  assert.equal(packageJson.engines.node, ">=22.13");
   assert.match(packageJson.scripts["desktop:windows"], /--publish never/);
   assert.match(packageJson.scripts["desktop:linux"], /--publish never/);
 });

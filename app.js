@@ -1267,5 +1267,14 @@ if (IS_NATIVE_CLIENT) initializeNativeAuthentication();
 else hydrateRemoteState({ announce: true });
 
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
-  window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(() => {}));
+  window.addEventListener("load", () => {
+    const isLocalDevelopment = ["localhost", "127.0.0.1"].includes(location.hostname);
+    if (isLocalDevelopment) {
+      navigator.serviceWorker.getRegistrations()
+        .then((registrations) => Promise.all(registrations.map((registration) => registration.unregister())))
+        .catch(() => {});
+      return;
+    }
+    navigator.serviceWorker.register("./service-worker.js").catch(() => {});
+  });
 }

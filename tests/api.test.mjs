@@ -71,6 +71,30 @@ test("a API executa regras no backend, persiste e protege contra comandos antigo
   }
 });
 
+test("o modo local aceita a própria origem sem configuração de CORS", async () => {
+  const temporaryDirectory = await mkdtemp(join(tmpdir(), "focusflow-local-origin-"));
+  const server = createFocusFlowServer({ dataFile: join(temporaryDirectory, "test.sqlite") });
+  server.listen(0, "127.0.0.1");
+  await once(server, "listening");
+  const { port } = server.address();
+  const baseUrl = `http://127.0.0.1:${port}`;
+
+  try {
+    const response = await fetch(`${baseUrl}/api/action`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Origin: baseUrl },
+      body: JSON.stringify({ action: "goal-save", payload: { hours: 6 }, baseRevision: 1 }),
+    });
+    assert.equal(response.status, 200);
+    assert.equal(response.headers.get("access-control-allow-origin"), baseUrl);
+    assert.equal((await response.json()).state.settings.dailyGoalMinutes, 360);
+  } finally {
+    server.close();
+    await once(server, "close");
+    await rm(temporaryDirectory, { recursive: true, force: true });
+  }
+});
+
 test("a API grava início e fim de Brasília no banco SQLite", async () => {
   const temporaryDirectory = await mkdtemp(join(tmpdir(), "focusflow-entry-times-"));
   const dataFile = join(temporaryDirectory, "test.sqlite");
