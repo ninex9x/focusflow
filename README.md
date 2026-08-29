@@ -1,138 +1,207 @@
 # FocusFlow
 
-Aplicativo de controle de tempo com uma única API e clientes para web/PWA,
-Android, Windows e Linux. Todas as regras de negócio e a persistência ficam no
-backend; os clientes apresentam a interface e enviam comandos autenticados.
+[![Build clients](https://github.com/ninex9x/tempo-app-public/actions/workflows/build-clients.yml/badge.svg)](https://github.com/ninex9x/tempo-app-public/actions/workflows/build-clients.yml)
+[![Secret scan](https://github.com/ninex9x/tempo-app-public/actions/workflows/secret-scan.yml/badge.svg)](https://github.com/ninex9x/tempo-app-public/actions/workflows/secret-scan.yml)
 
-## Desenvolvimento web
+Aplicativo de controle de tempo e projetos com clientes para web/PWA, Windows,
+Linux e Android. O backend centraliza regras de negócio, sincronização e
+persistência em SQLite.
+
+## Recursos
+
+- cronômetro com pausa, retomada, finalização e revisão;
+- lançamentos manuais no horário de Brasília;
+- projetos, prazos, estimativas e subtarefas;
+- proteção contra horários sobrepostos e mais de 24 horas registradas no dia;
+- painel responsivo com métricas e gráficos;
+- notificações de metas, riscos, prazos e cronômetros esquecidos;
+- exportação em CSV e JSON;
+- sincronização entre os clientes pelo mesmo backend;
+- interface responsiva em modo escuro.
+
+## Início rápido
+
+### Requisitos
+
+- Node.js 22.13 ou superior;
+- npm 10 ou superior;
+- Git.
+
+### Executar localmente
 
 ```bash
+git clone https://github.com/ninex9x/tempo-app-public.git
+cd tempo-app-public
 npm install
 npm run dev
 ```
 
-Abra `http://127.0.0.1:3000`. Esse comando inicia a interface, a API e um banco
-SQLite local em `data/focusflow.sqlite`. Não é necessário criar `.env`, configurar
-Cloudflare ou instalar outro banco para desenvolver localmente.
+Abra [http://127.0.0.1:3000](http://127.0.0.1:3000).
 
-O modo local escuta apenas no computador, usa o perfil `Usuário local` e não
-possui autenticação. Para servir somente os arquivos estáticos, sem API, use
-`npm run dev:web` e abra `http://127.0.0.1:4173`.
+O comando inicia a interface, a API e o SQLite. O banco local é criado em
+`data/focusflow.sqlite`, diretório ignorado pelo Git. Não é necessário criar um
+arquivo `.env`, configurar Cloudflare ou instalar um banco separado.
 
-Para gerar os arquivos web estáticos:
+O modo local:
 
-```bash
-npm run build
+- escuta apenas em `127.0.0.1`;
+- usa o perfil `Usuário local`;
+- mantém os dados somente na máquina;
+- executa sem autenticação externa.
+
+## Comandos
+
+| Comando | Descrição |
+| --- | --- |
+| `npm run dev` | Inicia interface, API e SQLite em `127.0.0.1:3000` |
+| `npm start` | Inicia a aplicação completa, igual ao modo local |
+| `npm run dev:web` | Serve somente a interface em `127.0.0.1:4173` |
+| `npm test` | Executa os testes automatizados |
+| `npm run build` | Gera a versão web estática em `dist/` |
+| `npm run desktop:windows` | Gera o instalador NSIS no Windows |
+| `npm run desktop:linux` | Gera os pacotes AppImage e DEB no Linux |
+
+## Arquitetura
+
+```text
+Web / PWA ─────┐
+Windows/Linux ─┼──> API Node.js ──> regras de negócio ──> SQLite
+Android ───────┘
 ```
 
-O resultado fica em `dist/`. Uma implantação HTTPS também pode ser instalada
-como PWA no Android, Windows e Linux.
+Os clientes apresentam a interface e enviam comandos para a API. Validações,
+estatísticas, notificações e persistência são processadas no backend.
 
-## API e autenticação
+Principais endpoints:
 
-O navegador e todos os aplicativos usam a mesma API:
+| Método | Endpoint | Finalidade |
+| --- | --- | --- |
+| `GET` | `/api/health` | Verifica a integridade do serviço |
+| `GET` | `/api/auth` | Retorna a identidade validada pelo backend |
+| `GET` | `/api/state` | Carrega o estado e a revisão atuais |
+| `POST` | `/api/action` | Executa uma ação com controle de concorrência |
+| `GET` | `/api/export` | Exporta os registros em CSV ou JSON |
 
-- `GET /api/health` — integridade do serviço;
-- `GET /api/auth` — identidade validada pelo backend;
-- `GET /api/state` — estado atual e revisão;
-- `POST /api/action` — executa comandos com validação e controle de concorrência;
-- `GET /api/export` — gera CSV ou JSON no backend.
+## Executar com Docker
 
-O Cloudflare Access autentica a conta Google. O backend valida assinatura,
-emissor, expiração e audiência do JWT recebido no cabeçalho
-`Cf-Access-Jwt-Assertion`. O endpoint `/api/health` é a única exceção para os
-health checks internos.
-
-Cada identidade (`sub`) possui um estado SQLite próprio. O e-mail exibido no
-perfil vem da conta autenticada e não pode ser trocado pelo cliente. A variável
-`LEGACY_OWNER_EMAIL` permite migrar o estado único de versões anteriores apenas
-para seu proprietário, sem expô-lo às demais contas.
-
-Os clientes nativos usam OAuth 2.0 Authorization Code com PKCE e RFC 8707. O
-app mostra uma tela de acesso própria e só abre o login depois do toque do
-usuário. O login acontece no navegador padrão do sistema, nunca na WebView
-incorporada. O cliente persiste a sessão cifrada pelo cofre do sistema no desktop
-e pelo Android Keystore no celular. Os tokens nunca são gravados em texto puro;
-quando a sessão é recusada, o material persistido é apagado antes de um novo
-login. O token de acesso é renovado silenciosamente com uma única operação por
-vez; falhas temporárias de rede não apagam a sessão. O Cloudflare converte o
-token opaco em uma asserção assinada para o backend.
-
-## Servidor
-
-O `compose.yaml` executa a aplicação e um Nginx sem privilégios. O SQLite fica
-em um volume persistente e o serviço escuta somente em `127.0.0.1:8091`.
-
-Para iniciar localmente com Docker, sem configuração adicional:
+Docker Compose inicia a aplicação e um Nginx sem privilégios. O SQLite fica em
+um volume persistente e a porta é exposta somente no computador local.
 
 ```bash
 docker compose up -d --build
 ```
 
-Abra `http://127.0.0.1:8091`.
+Abra [http://127.0.0.1:8091](http://127.0.0.1:8091).
 
-Em produção, o HTTPS pode ser terminado pelo Cloudflare e o tráfego encaminhado
-por um Cloudflare Tunnel. Nesse caso, copie o modelo de configuração e preencha
-os valores apenas no ambiente privado. O arquivo `.env` é ignorado pelo Git:
+Para acompanhar ou encerrar:
+
+```bash
+docker compose logs -f
+docker compose down
+```
+
+## Configuração de produção
+
+O modo de produção pode usar Cloudflare Tunnel e Cloudflare Access. Copie o
+modelo e mantenha os valores reais somente no ambiente privado:
 
 ```bash
 cp .env.example .env
 ```
 
-Defina `REQUIRE_ACCESS_AUTH=true` somente em conjunto com `TEAM_DOMAIN` e
-`POLICY_AUD`. `ALLOWED_ORIGINS` aceita origens adicionais separadas por vírgula;
-a origem da própria aplicação é aceita automaticamente. `LEGACY_OWNER_EMAIL` é
-opcional e deve ser usada somente durante uma migração de dados legados.
+| Variável | Obrigatória | Descrição |
+| --- | --- | --- |
+| `REQUIRE_ACCESS_AUTH` | Não | Use `true` para ativar o Cloudflare Access |
+| `TEAM_DOMAIN` | Com autenticação | Domínio da equipe no Cloudflare Access |
+| `POLICY_AUD` | Com autenticação | Audiência da política do Access |
+| `ALLOWED_ORIGINS` | Não | Origens adicionais, separadas por vírgula |
+| `LEGACY_OWNER_EMAIL` | Não | Migração controlada de dados legados |
 
-Nunca versione `.env`, bancos SQLite, certificados, instaladores ou arquivos de
-assinatura. Consulte [SECURITY.md](SECURITY.md) antes de publicar uma cópia do
-projeto.
+Quando `REQUIRE_ACCESS_AUTH=true`, o backend valida assinatura, emissor,
+expiração e audiência do JWT enviado pelo Cloudflare Access. Cada identidade
+possui dados isolados no SQLite. O e-mail do perfil vem da conta autenticada e
+não pode ser alterado pelo cliente.
+
+Nunca envie `.env`, tokens, bancos SQLite, certificados, instaladores ou chaves
+de assinatura ao Git.
+
+## Windows e Linux
+
+O cliente desktop usa Electron e mantém a sessão OAuth cifrada pelo cofre do
+sistema. O login é aberto no navegador padrão, fora da janela do aplicativo.
+
+```bash
+npm run desktop:icon
+npm run desktop:windows
+```
+
+No Linux:
+
+```bash
+npm run desktop:icon
+npm run desktop:linux
+```
+
+Os artefatos são gravados em `release/`:
+
+- Windows: instalador NSIS `.exe`;
+- Linux: `.AppImage` e `.deb`.
 
 ## Android
 
-O projeto Android está em `android/`. A interface web é empacotada no APK, mas
-todas as chamadas da API passam pela ponte HTTP nativa autenticada. Requer JDK
-17 e Android SDK 34.
+O projeto Android requer JDK 17 e Android SDK 34.
+
+No Linux ou macOS:
 
 ```bash
 cd android
 ./gradlew assembleDebug
 ```
 
-APK: `android/app/build/outputs/apk/debug/app-debug.apk`.
+No Windows:
 
-## Windows e Linux
-
-O shell Electron em `desktop/` serve a interface apenas em loopback, realiza o
-login no navegador do sistema e encaminha `/api/*` para o backend com o token do
-Access. Ele não executa regras de negócio localmente.
-
-```bash
-npm run desktop:icon
-npm run desktop:windows
-npm run desktop:linux
+```powershell
+cd android
+.\gradlew.bat assembleDebug
 ```
 
-Os instaladores ficam em `release/`:
+O APK é gerado em `android/app/build/outputs/apk/debug/app-debug.apk`.
 
-- Windows: instalador NSIS `.exe`;
-- Linux: `.AppImage` e `.deb`.
+## Estrutura do projeto
 
-O comando Linux deve ser executado em Linux. O workflow
-`.github/workflows/build-clients.yml` testa o projeto e gera APK, EXE, AppImage e
-DEB em runners nativos do GitHub Actions.
+```text
+android/                 cliente Android nativo
+desktop/                 shell Electron, OAuth e atualizador
+server/                  API, autenticação e regras de negócio
+scripts/                 build e publicação de atualizações
+tests/                   testes automatizados
+updates/                 catálogo local de atualizações
+app.js                   interface e integração com a API
+compose.yaml             ambiente Docker local
+config.js                configuração do cliente web
+index.html               documento principal
+styles.css               estilos responsivos
+```
 
-## Recursos
+## Qualidade e segurança
 
-- cronômetro com pausar, retomar e finalizar;
-- lançamentos manuais com início, fim e duração no horário de Brasília;
-- criação, edição, prazo opcional, arquivamento e exclusão de projetos;
-- planejamento por subtarefas, com estimativas, progresso e vínculo ao cronômetro;
-- revisão, correção e exclusão de lançamentos no projeto original, com proteção contra sobreposição e limite de 24 horas por dia;
-- painel operacional responsivo com navegação, cartões e gráficos em linha;
-- estatísticas calculadas no backend;
-- notificações do backend para timer esquecido, metas, estimativas, riscos, prazos e resumo semanal;
-- notificações nativas no Android, incluindo cronômetro ativo na barra de notificações;
-- perfil e exportação CSV/JSON;
-- interface responsiva somente em modo escuro;
-- sincronização pelo mesmo banco entre web e aplicativos.
+Cada push e pull request executa:
+
+- testes da API, domínio, OAuth, interface e atualizações;
+- build da versão web;
+- geração de APK, EXE, AppImage e DEB;
+- varredura de segredos com Gitleaks.
+
+Leia [SECURITY.md](SECURITY.md) antes de publicar uma alteração. Vulnerabilidades
+devem ser relatadas de forma privada por um GitHub Security Advisory, nunca em
+uma issue pública.
+
+O processo de atualização dos clientes desktop está documentado em
+[UPDATES.md](UPDATES.md).
+
+## Contribuindo
+
+1. Crie uma branch para a alteração.
+2. Implemente a mudança sem adicionar dados ou credenciais reais.
+3. Execute `npm test` e `npm run build`.
+4. Abra um pull request descrevendo o comportamento alterado.
