@@ -1,0 +1,18 @@
+{
+  "name": "FocusFlow — Controle de Tempo",
+  "short_name": "FocusFlow",
+  "description": "Projetos, foco e produtividade em um só lugar.",
+  "start_url": "./#home",
+  "display": "standalone",
+  "background_color": "#050505",
+  "theme_color": "#050505",
+  "lang": "pt-BR",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

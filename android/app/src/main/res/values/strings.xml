@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">FocusFlow</string>
+    <string name="export_success">Arquivo salvo em Downloads/FocusFlow</string>
+    <string name="export_success_legacy">Arquivo salvo na pasta externa do FocusFlow</string>
+    <string name="export_error">Não foi possível salvar o arquivo</string>
+    <string name="link_error">Não foi possível abrir este link</string>
+    <string name="notification_channel_timer">Cronômetro em andamento</string>
+    <string name="notification_channel_timer_description">Mostra a duração da sessão de foco ativa</string>
+    <string name="notification_channel_alerts">Alertas do FocusFlow</string>
+    <string name="notification_channel_alerts_description">Prazos, metas, riscos e lembretes do workspace</string>
+    <string name="notification_permission_denied">Permita notificações nas configurações do Android para acompanhar o cronômetro.</string>
+</resources>

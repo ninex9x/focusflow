@@ -1,0 +1,58 @@
+services:
+  focusflow:
+    build: .
+    container_name: focusflow-app
+    restart: unless-stopped
+    expose:
+      - "3000"
+    environment:
+      ALLOWED_ORIGINS: "${ALLOWED_ORIGINS:?Defina ALLOWED_ORIGINS no arquivo .env}"
+      REQUIRE_ACCESS_AUTH: "${REQUIRE_ACCESS_AUTH:-true}"
+      LEGACY_OWNER_EMAIL: "${LEGACY_OWNER_EMAIL:-}"
+      TEAM_DOMAIN: "${TEAM_DOMAIN:?Defina TEAM_DOMAIN no arquivo .env}"
+      POLICY_AUD: "${POLICY_AUD:?Defina POLICY_AUD no arquivo .env}"
+      UPDATES_ROOT: "/app/updates"
+    volumes:
+      - focusflow-data:/app/data
+      - ./updates:/app/updates:ro
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  nginx:
+    image: nginxinc/nginx-unprivileged:stable-alpine
+    container_name: focusflow-nginx
+    restart: unless-stopped
+    depends_on:
+      focusflow:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8091:8080"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/api/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  focusflow-data:

@@ -1,0 +1,73 @@
+{
+  "name": "focusflow",
+  "version": "1.4.4",
+  "description": "Controle de tempo com sincronização segura pelo backend FocusFlow.",
+  "author": "FocusFlow contributors",
+  "homepage": "https://github.com/ninex9x/tempo-app-public",
+  "desktopName": "FocusFlow",
+  "private": true,
+  "type": "module",
+  "main": "desktop/main.mjs",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "node scripts/serve.mjs",
+    "build": "node scripts/build.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "desktop:dev": "electron .",
+    "desktop:icon": "node scripts/generate-desktop-icon.mjs",
+    "desktop:dir": "electron-builder --dir",
+    "desktop:windows": "electron-builder --win nsis",
+    "desktop:linux": "electron-builder --linux AppImage deb",
+    "updates:prepare": "node scripts/prepare-updates.mjs",
+    "updates:publish": "node scripts/publish-updates.mjs"
+  },
+  "devDependencies": {
+    "electron": "43.4.0",
+    "electron-builder": "26.15.3",
+    "sharp": "0.35.3"
+  },
+  "allowScripts": {
+    "electron@43.4.0": true
+  },
+  "build": {
+    "appId": "com.focusflow.app",
+    "productName": "FocusFlow",
+    "artifactName": "FocusFlow-${version}-${os}-${arch}.${ext}",
+    "asar": true,
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "desktop/**/*",
+      "index.html",
+      "app.js",
+      "styles.css",
+      "icon.svg",
+      "manifest.webmanifest",
+      "package.json"
+    ],
+    "win": {
+      "icon": "build/icon.png",
+      "target": [
+        "nsis"
+      ]
+    },
+    "linux": {
+      "icon": "build/icon.png",
+      "category": "Utility",
+      "syncDesktopName": true,
+      "target": [
+        "AppImage",
+        "deb"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  }
+}
