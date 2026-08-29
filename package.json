@@ -6,7 +6,7 @@
     "name": "FocusFlow contributors",
     "email": "170105990+ninex9x@users.noreply.github.com"
   },
-  "homepage": "https://github.com/ninex9x/tempo-app-public",
+  "homepage": "https://github.com/ninex9x/focusflow",
   "desktopName": "FocusFlow",
   "private": true,
   "type": "module",
@@ -46,11 +46,7 @@
     },
     "files": [
       "desktop/**/*",
-      "index.html",
-      "app.js",
-      "styles.css",
-      "icon.svg",
-      "manifest.webmanifest",
+      "web/**/*",
       "package.json"
     ],
     "win": {

@@ -1,7 +1,7 @@
 # FocusFlow
 
-[![Build clients](https://github.com/ninex9x/tempo-app-public/actions/workflows/build-clients.yml/badge.svg)](https://github.com/ninex9x/tempo-app-public/actions/workflows/build-clients.yml)
-[![Secret scan](https://github.com/ninex9x/tempo-app-public/actions/workflows/secret-scan.yml/badge.svg)](https://github.com/ninex9x/tempo-app-public/actions/workflows/secret-scan.yml)
+[![Build clients](https://github.com/ninex9x/focusflow/actions/workflows/build-clients.yml/badge.svg)](https://github.com/ninex9x/focusflow/actions/workflows/build-clients.yml)
+[![Secret scan](https://github.com/ninex9x/focusflow/actions/workflows/secret-scan.yml/badge.svg)](https://github.com/ninex9x/focusflow/actions/workflows/secret-scan.yml)
 
 Aplicativo de controle de tempo e projetos com clientes para web/PWA, Windows,
 Linux e Android. O backend centraliza regras de negócio, sincronização e
@@ -30,8 +30,8 @@ persistência em SQLite.
 ### Executar localmente
 
 ```bash
-git clone https://github.com/ninex9x/tempo-app-public.git
-cd tempo-app-public
+git clone https://github.com/ninex9x/focusflow.git
+cd focusflow
 npm install
 npm run dev
 ```
@@ -171,16 +171,15 @@ O APK é gerado em `android/app/build/outputs/apk/debug/app-debug.apk`.
 
 ```text
 android/                 cliente Android nativo
+deploy/                  Dockerfile e configuração do Nginx
 desktop/                 shell Electron, OAuth e atualizador
+docs/                    documentação complementar
 server/                  API, autenticação e regras de negócio
 scripts/                 build e publicação de atualizações
 tests/                   testes automatizados
 updates/                 catálogo local de atualizações
-app.js                   interface e integração com a API
+web/                     interface, estilos, ícones e manifesto PWA
 compose.yaml             ambiente Docker local
-config.js                configuração do cliente web
-index.html               documento principal
-styles.css               estilos responsivos
 ```
 
 ## Qualidade e segurança
@@ -197,7 +196,7 @@ devem ser relatadas de forma privada por um GitHub Security Advisory, nunca em
 uma issue pública.
 
 O processo de atualização dos clientes desktop está documentado em
-[UPDATES.md](UPDATES.md).
+[docs/UPDATES.md](docs/UPDATES.md).
 
 ## Contribuindo
 

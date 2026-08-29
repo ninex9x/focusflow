@@ -3,7 +3,7 @@ FROM node:24-bookworm-slim
 WORKDIR /app
 
 COPY --chown=node:node server ./server
-COPY --chown=node:node index.html config.js app.js styles.css icon.svg manifest.webmanifest service-worker.js ./public/
+COPY --chown=node:node web/ ./public/
 
 RUN mkdir -p /app/data /app/updates && chown -R node:node /app/data /app/updates
 

@@ -11,6 +11,7 @@ import { DesktopUpdater } from "./updater.mjs";
 
 const desktopDirectory = dirname(fileURLToPath(import.meta.url));
 const applicationRoot = resolve(desktopDirectory, "..");
+const webRoot = resolve(applicationRoot, "web");
 const publicFiles = new Set(["index.html", "app.js", "styles.css", "icon.svg", "manifest.webmanifest"]);
 const contentTypes = {
   ".css": "text/css; charset=utf-8",
@@ -128,8 +129,8 @@ async function serveStatic(request, response, url) {
     return;
   }
   if (!publicFiles.has(requestedFile)) requestedFile = "index.html";
-  const filePath = resolve(applicationRoot, requestedFile);
-  if (!filePath.startsWith(`${applicationRoot}${sep}`) || !(await stat(filePath)).isFile()) {
+  const filePath = resolve(webRoot, requestedFile);
+  if (!filePath.startsWith(`${webRoot}${sep}`) || !(await stat(filePath)).isFile()) {
     sendJson(response, 404, { error: "Arquivo não encontrado." });
     return;
   }

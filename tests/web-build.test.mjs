@@ -3,7 +3,16 @@ import { once } from "node:events";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
+const webAssets = new Set([
+  "index.html",
+  "config.js",
+  "app.js",
+  "styles.css",
+  "icon.svg",
+  "manifest.webmanifest",
+  "service-worker.js",
+]);
+const read = (path) => readFile(new URL(`../${webAssets.has(path) ? `web/${path}` : path}`, import.meta.url), "utf8");
 
 test("a página carrega os recursos principais e declara o PWA", async () => {
   const html = await read("index.html");
@@ -56,6 +65,26 @@ test("a sincronização mantém formulários ativos e aplica o estado em cache d
   assert.match(styles, /\.sync-badge\.cached/);
   assert.match(styles, /\.data-loading-skeleton/);
   assert.doesNotMatch(styles, /@keyframes page-in/);
+});
+
+test("a raiz separa interface, infraestrutura e documentação", async () => {
+  const [packageJson, compose, dockerfile, androidBuild, desktop] = await Promise.all([
+    read("package.json").then(JSON.parse),
+    read("compose.yaml"),
+    read("deploy/Dockerfile"),
+    read("android/app/build.gradle"),
+    read("desktop/main.mjs"),
+  ]);
+  assert.ok(packageJson.build.files.includes("web/**/*"));
+  assert.match(compose, /dockerfile:\s*deploy\/Dockerfile/);
+  assert.match(compose, /\.\/deploy\/nginx\.conf/);
+  assert.match(dockerfile, /COPY --chown=node:node web\/ \.\/public\//);
+  assert.match(androidBuild, /rootProject\.file\("\.\.\/web"\)/);
+  assert.match(desktop, /const webRoot = resolve\(applicationRoot, "web"\)/);
+  await assert.rejects(
+    readFile(new URL("../index.html", import.meta.url), "utf8"),
+    (error) => error?.code === "ENOENT",
+  );
 });
 
 test("a configuração pública não contém dados privados de implantação", async () => {

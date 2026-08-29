@@ -84,7 +84,7 @@ function isSameOriginRequest(request, origin) {
 }
 
 export function createFocusFlowServer(options = {}) {
-  const staticRoot = resolve(options.staticRoot || process.env.STATIC_ROOT || projectRoot);
+  const staticRoot = resolve(options.staticRoot || process.env.STATIC_ROOT || resolve(projectRoot, "web"));
   const dataFile = resolve(options.dataFile || process.env.DATA_FILE || resolve(projectRoot, "data", "focusflow.sqlite"));
   const updatesRoot = resolve(options.updatesRoot || process.env.UPDATES_ROOT || resolve(projectRoot, "updates"));
   const allowedOrigins = new Set(

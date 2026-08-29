@@ -5,6 +5,7 @@ import { extname, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
+const webRoot = resolve(root, "web");
 const port = Number(process.env.PORT || 4173);
 const contentTypes = {
   ".css": "text/css; charset=utf-8",
@@ -17,9 +18,9 @@ const contentTypes = {
 
 const server = createServer(async (request, response) => {
   const pathname = decodeURIComponent(new URL(request.url, "http://localhost").pathname);
-  let filePath = resolve(root, pathname === "/" ? "index.html" : `.${pathname}`);
+  let filePath = resolve(webRoot, pathname === "/" ? "index.html" : `.${pathname}`);
 
-  if (filePath !== root && !filePath.startsWith(`${root}${sep}`)) {
+  if (filePath !== webRoot && !filePath.startsWith(`${webRoot}${sep}`)) {
     response.writeHead(403).end("Acesso negado");
     return;
   }
@@ -27,7 +28,7 @@ const server = createServer(async (request, response) => {
   try {
     if (!(await stat(filePath)).isFile()) throw new Error("Not a file");
   } catch {
-    filePath = resolve(root, "index.html");
+    filePath = resolve(webRoot, "index.html");
   }
 
   response.writeHead(200, {

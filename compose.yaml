@@ -1,6 +1,8 @@
 services:
   focusflow:
-    build: .
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile
     container_name: focusflow-app
     restart: unless-stopped
     expose:
@@ -39,7 +41,7 @@ services:
     ports:
       - "127.0.0.1:8091:8080"
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./deploy/nginx.conf:/etc/nginx/nginx.conf:ro
     read_only: true
     tmpfs:
       - /tmp

@@ -30,7 +30,7 @@ android {
 def generatedWebAssets = layout.buildDirectory.dir("generated/focusflowAssets")
 
 tasks.register("syncWebAssets", Copy) {
-    from(rootProject.file("..")) {
+    from(rootProject.file("../web")) {
         include "index.html"
         include "config.js"
         include "styles.css"
