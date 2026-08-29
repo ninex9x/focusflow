@@ -12,12 +12,16 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
         with:
           node-version: 24
           cache: npm
+          cache-dependency-path: app/package-lock.json
       - run: npm ci
       - run: npm test
       - run: npm run build
@@ -32,14 +36,14 @@ jobs:
           java-version: 17
           cache: gradle
       - name: Build Android APK
-        working-directory: android
+        working-directory: app/android
         run: |
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
       - uses: actions/upload-artifact@v7
         with:
           name: FocusFlow-Android
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          path: app/android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
 
   desktop:
@@ -50,20 +54,24 @@ jobs:
           - os: windows-latest
             command: desktop:windows
             artifact: FocusFlow-Windows
-            files: release/*.exe
+            files: app/release/*.exe
           - os: ubuntu-latest
             command: desktop:linux
             artifact: FocusFlow-Linux
             files: |
-              release/*.AppImage
-              release/*.deb
+              app/release/*.AppImage
+              app/release/*.deb
     runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: app
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
         with:
           node-version: 24
           cache: npm
+          cache-dependency-path: app/package-lock.json
       - run: npm ci
       - run: npm run desktop:icon
       - run: npm run ${{ matrix.command }}

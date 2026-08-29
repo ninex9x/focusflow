@@ -31,7 +31,7 @@ persistência em SQLite.
 
 ```bash
 git clone https://github.com/ninex9x/focusflow.git
-cd focusflow
+cd focusflow/app
 npm install
 npm run dev
 ```
@@ -41,6 +41,9 @@ Abra [http://127.0.0.1:3000](http://127.0.0.1:3000).
 O comando inicia a interface, a API e o SQLite. O banco local é criado em
 `data/focusflow.sqlite`, diretório ignorado pelo Git. Não é necessário criar um
 arquivo `.env`, configurar Cloudflare ou instalar um banco separado.
+
+Todos os comandos npm, Docker e Gradle das próximas seções consideram o
+diretório `app/` como diretório atual.
 
 O modo local:
 
@@ -170,16 +173,19 @@ O APK é gerado em `android/app/build/outputs/apk/debug/app-debug.apk`.
 ## Estrutura do projeto
 
 ```text
-android/                 cliente Android nativo
-deploy/                  Dockerfile e configuração do Nginx
-desktop/                 shell Electron, OAuth e atualizador
-docs/                    documentação complementar
-server/                  API, autenticação e regras de negócio
-scripts/                 build e publicação de atualizações
-tests/                   testes automatizados
-updates/                 catálogo local de atualizações
-web/                     interface, estilos, ícones e manifesto PWA
-compose.yaml             ambiente Docker local
+.github/                 workflows e política de segurança
+app/
+├── android/             cliente Android nativo
+├── deploy/              Dockerfile e configuração do Nginx
+├── desktop/             shell Electron, OAuth e atualizador
+├── docs/                documentação complementar
+├── scripts/             build e publicação de atualizações
+├── server/              API, autenticação e regras de negócio
+├── tests/               testes automatizados
+├── updates/             catálogo local de atualizações
+├── web/                 interface, estilos, ícones e manifesto PWA
+└── compose.yaml         ambiente Docker local
+README.md                apresentação e início rápido
 ```
 
 ## Qualidade e segurança
@@ -191,12 +197,12 @@ Cada push e pull request executa:
 - geração de APK, EXE, AppImage e DEB;
 - varredura de segredos com Gitleaks.
 
-Leia [SECURITY.md](SECURITY.md) antes de publicar uma alteração. Vulnerabilidades
+Leia [.github/SECURITY.md](.github/SECURITY.md) antes de publicar uma alteração. Vulnerabilidades
 devem ser relatadas de forma privada por um GitHub Security Advisory, nunca em
 uma issue pública.
 
 O processo de atualização dos clientes desktop está documentado em
-[docs/UPDATES.md](docs/UPDATES.md).
+[app/docs/UPDATES.md](app/docs/UPDATES.md).
 
 ## Contribuindo
 
