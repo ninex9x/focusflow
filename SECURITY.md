@@ -15,3 +15,6 @@ por engano, mesmo que o commit seja removido depois.
 - use `.env.example` apenas como modelo, sempre com valores fictícios;
 - execute um scanner de segredos antes de publicar branches ou releases;
 - não versione instaladores, APKs, bancos SQLite ou certificados de assinatura.
+
+O workflow `Secret scan` executa o Gitleaks em cada push e pull request. Uma
+falha nessa verificação deve ser investigada antes de mesclar a alteração.
