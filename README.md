@@ -133,8 +133,6 @@ um volume persistente e a porta é exposta somente no computador local.
 docker compose up -d --build
 ```
 
-Abra [http://127.0.0.1:8091](http://127.0.0.1:8091).
-
 Para acompanhar ou encerrar:
 
 ```bash
