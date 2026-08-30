@@ -3,8 +3,6 @@
 [![Build clients](https://github.com/ninex9x/focusflow/actions/workflows/build-clients.yml/badge.svg)](https://github.com/ninex9x/focusflow/actions/workflows/build-clients.yml)
 [![Secret scan](https://github.com/ninex9x/focusflow/actions/workflows/secret-scan.yml/badge.svg)](https://github.com/ninex9x/focusflow/actions/workflows/secret-scan.yml)
 
-![Capa do FocusFlow](app/docs/assets/focusflow-social-preview.png)
-
 [**▶ Abrir demonstração online**](https://ninex9x.github.io/focusflow/)
 
 | Tela inicial | Estatísticas |
