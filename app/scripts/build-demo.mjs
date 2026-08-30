@@ -20,10 +20,11 @@ const [html, domainSource, demoStateSource, serviceWorker] = await Promise.all([
   readFile(resolve(webRoot, "service-worker.js"), "utf8"),
 ]);
 
-const demoDomain = `${domainSource.replace(/^export /gm, "")}\n` +
-  "globalThis.FocusFlowDomain = Object.freeze({ DomainError, localDateKey, createDefaultState, normalizeState, buildClientState, applyAction, exportState });\n";
-const demoState = `${demoStateSource.replace(/^import .*$/m, "").replace(/^export /gm, "")}\n` +
-  "globalThis.createFocusFlowDemoState = createDemoState;\n";
+const demoDomain = `(() => {\n${domainSource.replace(/^export /gm, "")}\n` +
+  "globalThis.FocusFlowDomain = Object.freeze({ DomainError, localDateKey, createDefaultState, normalizeState, buildClientState, applyAction, exportState });\n})();\n";
+const demoState = `(() => {\nconst { createDefaultState, localDateKey } = globalThis.FocusFlowDomain;\n` +
+  `${demoStateSource.replace(/^import .*$/m, "").replace(/^export /gm, "")}\n` +
+  "globalThis.createFocusFlowDemoState = createDemoState;\n})();\n";
 const demoConfig = `globalThis.FocusFlowConfig = Object.freeze({
   apiBaseUrl: "",
   requestTimeoutMs: 7_000,
@@ -36,7 +37,7 @@ const demoHtml = html.replace(
   '<script defer src="demo-domain.js"></script>\n    <script defer src="demo-state.js"></script>\n    <script defer src="demo-api.js"></script>\n    <script defer src="app.js"></script>',
 );
 const demoServiceWorker = serviceWorker
-  .replace('const CACHE = "focusflow-v19";', 'const CACHE = "focusflow-demo-v20";')
+  .replace('const CACHE = "focusflow-v19";', 'const CACHE = "focusflow-demo-v21";')
   .replace('"./app.js"', '"./demo-domain.js", "./demo-state.js", "./demo-api.js", "./app.js"');
 
 await Promise.all([
