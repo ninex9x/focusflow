@@ -18,6 +18,7 @@ persistência em SQLite.
 
 [Estudo de caso](app/docs/CASE_STUDY.md) ·
 [Roadmap](app/docs/ROADMAP.md) ·
+[Guia para publicar outro projeto](app/docs/GUIA_PROJETO_PUBLICO.md) ·
 [Releases](https://github.com/ninex9x/focusflow/releases)
 
 ## Recursos
