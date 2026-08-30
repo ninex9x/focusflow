@@ -220,6 +220,19 @@ img { max-width: 100%; }
 }
 .topbar-actions { display: flex; align-items: center; gap: 4px; }
 
+.demo-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 5px 10px;
+  border: 1px solid color-mix(in srgb, var(--primary) 55%, var(--outline));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+  color: var(--primary);
+  font: 600 10px/1 "JetBrains Mono", monospace;
+  white-space: nowrap;
+}
+
 .sync-badge {
   display: inline-flex;
   align-items: center;
@@ -997,6 +1010,7 @@ h1, h2, h3, p { margin-top: 0; }
   .summary-grid { grid-template-columns: 1fr; }
   .summary-card-large { grid-column: auto; }
   .sync-badge { width: 30px; padding: 5px; justify-content: center; overflow: hidden; font-size: 0; }
+  .demo-badge { display: none; }
   .chart-card { padding-inline: 14px; }
   .chart { height: 210px; gap: 4px; }
   .chart-30 { gap: 1px; }

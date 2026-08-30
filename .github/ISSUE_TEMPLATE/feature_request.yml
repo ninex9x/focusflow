@@ -1,0 +1,25 @@
+name: Sugerir uma melhoria
+description: Proponha uma ideia para o FocusFlow.
+title: "[Ideia]: "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Qual problema a ideia resolve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Solução sugerida
+      description: Explique o resultado desejado, sem exigir uma implementação específica.
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Plataforma principal
+      options: [Todas, Web/PWA, Windows, Linux, Android]
+    validations:
+      required: true

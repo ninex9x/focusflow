@@ -73,6 +73,7 @@ let pendingRemoteState = null;
 let hydrationPromise = null;
 let hasHydratedState = false;
 let syncStatus = "connecting";
+let demoMode = false;
 let desktopUpdateStatus = NATIVE_UPDATE_TOKEN
   ? { status: "idle", currentVersion: APP_VERSION, progress: 0, message: "Atualizações automáticas ativadas." }
   : null;
@@ -179,6 +180,10 @@ function syncStatusMarkup() {
   return `<span class="sync-badge ${syncStatus}" data-sync-status><span></span>${labels[syncStatus]}</span>`;
 }
 
+function demoModeMarkup() {
+  return demoMode ? '<span class="demo-badge" title="Dados fictícios e temporários">Modo demonstração</span>' : "";
+}
+
 function renderNativeLogin() {
   const busy = ["checking", "authenticating"].includes(nativeAuthentication.status);
   const buttonLabel = nativeAuthentication.status === "authenticating"
@@ -246,6 +251,7 @@ function render() {
           <a class="brand" href="#home"><img class="brand-mark" src="icon.svg" alt="" /><span>FocusFlow</span></a>
         </div>
         <div class="topbar-actions">
+          ${demoModeMarkup()}
           <button class="topbar-link" type="button" data-action="about">${icon("info", "icon-sm")}<span>Ajuda</span></button>
           ${syncStatusMarkup()}
           <button class="icon-button notification-button" data-action="notifications" aria-label="${unreadNotifications ? `${unreadNotifications} notificação${unreadNotifications === 1 ? "" : "es"} não lida${unreadNotifications === 1 ? "" : "s"}` : "Abrir notificações"}" aria-expanded="${ui.notificationsOpen}">${icon("bell")}${unreadNotifications ? `<span class="notification-dot" aria-hidden="true">${unreadNotifications > 9 ? "9+" : unreadNotifications}</span>` : ""}</button>
@@ -950,6 +956,7 @@ async function performAction(action, payload = {}) {
     }
     state = result.state;
     remoteRevision = result.revision;
+    demoMode = Boolean(result.demoMode);
     pendingRemoteState = null;
     setSyncStatus("synced");
     render();
@@ -978,6 +985,7 @@ async function hydrateRemoteState({ announce = false } = {}) {
       }
       if (!response.ok) throw new Error("API indisponível.");
       const remote = await response.json();
+      demoMode = Boolean(remote.demoMode);
       const shouldApplyRemote = remote.state && remote.revision !== remoteRevision;
       const firstHydration = !hasHydratedState;
       remoteRevision = remote.revision;

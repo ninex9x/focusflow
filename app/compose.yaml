@@ -10,6 +10,7 @@ services:
     environment:
       ALLOWED_ORIGINS: "${ALLOWED_ORIGINS:-}"
       REQUIRE_ACCESS_AUTH: "${REQUIRE_ACCESS_AUTH:-false}"
+      DEMO_MODE: "${DEMO_MODE:-false}"
       LEGACY_OWNER_EMAIL: "${LEGACY_OWNER_EMAIL:-}"
       TEAM_DOMAIN: "${TEAM_DOMAIN:-}"
       POLICY_AUD: "${POLICY_AUD:-}"

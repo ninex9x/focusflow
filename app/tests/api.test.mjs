@@ -321,3 +321,46 @@ test("o estado legado é migrado somente para o e-mail proprietário", async () 
     await rm(temporaryDirectory, { recursive: true, force: true });
   }
 });
+
+test("a demonstração usa dados fictícios, temporários e isolados por navegador", async () => {
+  const server = createFocusFlowServer({ demoMode: true });
+  server.listen(0, "127.0.0.1");
+  await once(server, "listening");
+  const { port } = server.address();
+  const baseUrl = `http://127.0.0.1:${port}`;
+
+  try {
+    const firstResponse = await fetch(`${baseUrl}/api/state`);
+    const firstCookie = firstResponse.headers.get("set-cookie").split(";")[0];
+    const first = await firstResponse.json();
+    assert.equal(first.demoMode, true);
+    assert.equal(first.state.profile.email, "demo@focusflow.local");
+    assert.ok(first.state.projects.length >= 3);
+    assert.ok(first.state.entries.length >= 8);
+
+    const changedResponse = await fetch(`${baseUrl}/api/action`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Cookie: firstCookie },
+      body: JSON.stringify({ action: "goal-save", payload: { hours: 8 }, baseRevision: first.revision }),
+    });
+    const changed = await changedResponse.json();
+    assert.equal(changed.state.settings.dailyGoalMinutes, 480);
+
+    const secondResponse = await fetch(`${baseUrl}/api/state`);
+    const second = await secondResponse.json();
+    assert.equal(second.state.settings.dailyGoalMinutes, 360);
+    assert.notEqual(secondResponse.headers.get("set-cookie").split(";")[0], firstCookie);
+
+    const resetResponse = await fetch(`${baseUrl}/api/action`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Cookie: firstCookie },
+      body: JSON.stringify({ action: "reset", baseRevision: changed.revision }),
+    });
+    const reset = await resetResponse.json();
+    assert.equal(reset.state.settings.dailyGoalMinutes, 360);
+    assert.ok(reset.state.projects.some((project) => project.name === "Website institucional"));
+  } finally {
+    server.close();
+    await once(server, "close");
+  }
+});

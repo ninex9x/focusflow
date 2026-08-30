@@ -1,10 +1,12 @@
 import { createReadStream, mkdirSync } from "node:fs";
 import { stat } from "node:fs/promises";
+import { randomUUID } from "node:crypto";
 import { createServer } from "node:http";
 import { DatabaseSync } from "node:sqlite";
 import { dirname, extname, resolve, sep } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { createCloudflareAccessVerifier } from "./cloudflare-access.mjs";
+import { createDemoState } from "./demo-state.mjs";
 import { applyAction, buildClientState, createDefaultState, exportState, normalizeState } from "./domain.mjs";
 import { findPublishedUpdate, getLatestUpdate, streamUpdateFile } from "./update-catalog.mjs";
 
@@ -71,6 +73,23 @@ function requestIdentity(authenticatedUser, requireAccessAuth) {
   };
 }
 
+function demoIdentity(request, responseHeaders) {
+  const sessionCookie = String(request.headers.cookie || "")
+    .split(";")
+    .map((part) => part.trim())
+    .find((part) => part.startsWith("focusflow_demo_session="));
+  const candidate = sessionCookie?.slice("focusflow_demo_session=".length) || "";
+  const sessionId = /^[a-f0-9-]{36}$/i.test(candidate) ? candidate : randomUUID();
+
+  if (!sessionCookie || sessionId !== candidate) {
+    const forwardedProtocol = String(request.headers["x-forwarded-proto"] || "").split(",")[0].trim();
+    const secure = forwardedProtocol === "https" || request.socket.encrypted;
+    responseHeaders["Set-Cookie"] = `focusflow_demo_session=${sessionId}; Path=/; HttpOnly; SameSite=Lax; Max-Age=86400${secure ? "; Secure" : ""}`;
+  }
+
+  return { id: `demo:${sessionId}`, email: "demo@focusflow.local", name: "Visitante Demo" };
+}
+
 function isSameOriginRequest(request, origin) {
   try {
     const forwardedHost = String(request.headers["x-forwarded-host"] || "").split(",")[0].trim();
@@ -85,7 +104,9 @@ function isSameOriginRequest(request, origin) {
 
 export function createFocusFlowServer(options = {}) {
   const staticRoot = resolve(options.staticRoot || process.env.STATIC_ROOT || resolve(projectRoot, "web"));
-  const dataFile = resolve(options.dataFile || process.env.DATA_FILE || resolve(projectRoot, "data", "focusflow.sqlite"));
+  const demoMode = options.demoMode ?? process.env.DEMO_MODE === "true";
+  const configuredDataFile = demoMode ? ":memory:" : (options.dataFile || process.env.DATA_FILE || resolve(projectRoot, "data", "focusflow.sqlite"));
+  const dataFile = configuredDataFile === ":memory:" ? configuredDataFile : resolve(configuredDataFile);
   const updatesRoot = resolve(options.updatesRoot || process.env.UPDATES_ROOT || resolve(projectRoot, "updates"));
   const allowedOrigins = new Set(
     (options.allowedOrigins || process.env.ALLOWED_ORIGINS || "")
@@ -94,6 +115,7 @@ export function createFocusFlowServer(options = {}) {
       .filter(Boolean),
   );
   const requireAccessAuth = options.requireAccessAuth ?? process.env.REQUIRE_ACCESS_AUTH === "true";
+  if (demoMode && requireAccessAuth) throw new Error("DEMO_MODE e REQUIRE_ACCESS_AUTH não podem ser ativados ao mesmo tempo.");
   const legacyOwnerEmail = String(options.legacyOwnerEmail ?? process.env.LEGACY_OWNER_EMAIL ?? "").trim().toLowerCase();
   const verifyAccessToken = requireAccessAuth
     ? options.verifyAccessToken || createCloudflareAccessVerifier({
@@ -102,7 +124,7 @@ export function createFocusFlowServer(options = {}) {
     })
     : null;
 
-  mkdirSync(dirname(dataFile), { recursive: true });
+  if (dataFile !== ":memory:") mkdirSync(dirname(dataFile), { recursive: true });
   const database = new DatabaseSync(dataFile);
   database.exec(`
     PRAGMA journal_mode = WAL;
@@ -126,6 +148,13 @@ export function createFocusFlowServer(options = {}) {
 
   const readLegacyState = database.prepare("SELECT state_json, revision, updated_at FROM state_store WHERE id = 1");
   const readUserState = database.prepare("SELECT state_json, revision, updated_at FROM user_state_store WHERE user_id = ?");
+  const countUserStates = database.prepare("SELECT COUNT(*) AS total FROM user_state_store");
+  const deleteOldestUserStates = database.prepare(`
+    DELETE FROM user_state_store
+    WHERE user_id IN (
+      SELECT user_id FROM user_state_store ORDER BY updated_at ASC LIMIT ?
+    )
+  `);
   const insertUserState = database.prepare(`
     INSERT OR IGNORE INTO user_state_store (user_id, email, state_json, revision, updated_at)
     VALUES (?, ?, ?, ?, ?)
@@ -140,7 +169,13 @@ export function createFocusFlowServer(options = {}) {
     let row = readUserState.get(identity.id);
     if (row) return row;
 
-    let initialState = createDefaultState(identity);
+    if (demoMode) {
+      const maxDemoSessions = 250;
+      const total = Number(countUserStates.get().total) || 0;
+      if (total >= maxDemoSessions) deleteOldestUserStates.run(total - maxDemoSessions + 1);
+    }
+
+    let initialState = demoMode ? createDemoState(identity) : createDefaultState(identity);
     let revision = 1;
     let updatedAt = new Date().toISOString();
     if (legacyOwnerEmail && identity.email === legacyOwnerEmail) {
@@ -208,7 +243,7 @@ export function createFocusFlowServer(options = {}) {
         }
       }
       const identity = url.pathname.startsWith("/api/")
-        ? requestIdentity(authenticatedUser, requireAccessAuth)
+        ? (demoMode ? demoIdentity(request, corsHeaders) : requestIdentity(authenticatedUser, requireAccessAuth))
         : null;
 
       if (url.pathname === "/api/auth" && request.method === "GET") {
@@ -248,6 +283,7 @@ export function createFocusFlowServer(options = {}) {
           state: buildClientState(JSON.parse(row.state_json), identity),
           revision: Number(row.revision),
           updatedAt: row.updated_at,
+          demoMode,
         }, corsHeaders);
         return;
       }
@@ -264,13 +300,16 @@ export function createFocusFlowServer(options = {}) {
           return;
         }
 
-        const nextState = applyAction(normalizeState(JSON.parse(current.state_json), identity), body.action, body.payload, identity);
+        const nextState = demoMode && body.action === "reset"
+          ? createDemoState(identity)
+          : applyAction(normalizeState(JSON.parse(current.state_json), identity), body.action, body.payload, identity);
         updateUserState.run(identity.email, JSON.stringify(nextState), new Date().toISOString(), identity.id);
         const saved = readUserState.get(identity.id);
         sendJson(response, 200, {
           state: buildClientState(nextState, identity),
           revision: Number(saved.revision),
           updatedAt: saved.updated_at,
+          demoMode,
         }, corsHeaders);
         return;
       }

@@ -3,9 +3,18 @@
 [![Build clients](https://github.com/ninex9x/focusflow/actions/workflows/build-clients.yml/badge.svg)](https://github.com/ninex9x/focusflow/actions/workflows/build-clients.yml)
 [![Secret scan](https://github.com/ninex9x/focusflow/actions/workflows/secret-scan.yml/badge.svg)](https://github.com/ninex9x/focusflow/actions/workflows/secret-scan.yml)
 
+![Capa do FocusFlow](app/docs/assets/focusflow-social-preview.png)
+
 Aplicativo de controle de tempo e projetos com clientes para web/PWA, Windows,
 Linux e Android. O backend centraliza regras de negócio, sincronização e
 persistência em SQLite.
+
+> Projeto de portfólio full stack: interface responsiva, domínio no backend,
+> autenticação, persistência, clientes nativos, testes e CI no mesmo produto.
+
+[Estudo de caso](app/docs/CASE_STUDY.md) ·
+[Roadmap](app/docs/ROADMAP.md) ·
+[Releases](https://github.com/ninex9x/focusflow/releases)
 
 ## Recursos
 
@@ -51,6 +60,28 @@ O modo local:
 - usa o perfil `Usuário local`;
 - mantém os dados somente na máquina;
 - executa sem autenticação externa.
+
+### Explorar com dados de demonstração
+
+O modo demonstração preenche o produto com projetos e registros fictícios. Cada
+navegador recebe uma sessão anônima isolada, armazenada somente em memória; tudo
+é apagado quando o servidor reinicia.
+
+No PowerShell:
+
+```powershell
+$env:DEMO_MODE="true"
+npm run dev
+```
+
+No Linux ou macOS:
+
+```bash
+DEMO_MODE=true npm run dev
+```
+
+A faixa **Modo demonstração** identifica esse ambiente. O comando “Redefinir
+dados” restaura a vitrine original.
 
 ## Comandos
 
@@ -115,6 +146,7 @@ cp .env.example .env
 | Variável | Obrigatória | Descrição |
 | --- | --- | --- |
 | `REQUIRE_ACCESS_AUTH` | Não | Use `true` para ativar o Cloudflare Access |
+| `DEMO_MODE` | Não | Usa sessões temporárias e dados totalmente fictícios |
 | `TEAM_DOMAIN` | Com autenticação | Domínio da equipe no Cloudflare Access |
 | `POLICY_AUD` | Com autenticação | Audiência da política do Access |
 | `ALLOWED_ORIGINS` | Não | Origens adicionais, separadas por vírgula |
@@ -210,3 +242,8 @@ O processo de atualização dos clientes desktop está documentado em
 2. Implemente a mudança sem adicionar dados ou credenciais reais.
 3. Execute `npm test` e `npm run build`.
 4. Abra um pull request descrevendo o comportamento alterado.
+
+Consulte também [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md) e use os
+templates de issue e pull request. O repositório ainda não declara uma licença;
+por isso, a publicação do código não concede automaticamente permissão de uso,
+modificação ou redistribuição.
