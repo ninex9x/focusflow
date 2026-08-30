@@ -7,6 +7,8 @@
 
 [**▶ Abrir demonstração online**](https://ninex9x.github.io/focusflow/)
 
+![Dashboard da demonstração do FocusFlow](app/docs/assets/focusflow-demo-dashboard.png)
+
 Aplicativo de controle de tempo e projetos com clientes para web/PWA, Windows,
 Linux e Android. O backend centraliza regras de negócio, sincronização e
 persistência em SQLite.

@@ -275,6 +275,7 @@ function render() {
   renderModal();
   updateTimerDisplay();
   syncAndroidNotificationState();
+  document.documentElement.dataset.focusFlowReady = "true";
 }
 
 function renderPage() {
@@ -1277,7 +1278,8 @@ else hydrateRemoteState({ announce: true });
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
   window.addEventListener("load", () => {
     const isLocalDevelopment = ["localhost", "127.0.0.1"].includes(location.hostname);
-    if (isLocalDevelopment) {
+    const serviceWorkerDisabled = globalThis.FocusFlowConfig?.serviceWorkerEnabled === false;
+    if (isLocalDevelopment || serviceWorkerDisabled) {
       navigator.serviceWorker.getRegistrations()
         .then((registrations) => Promise.all(registrations.map((registration) => registration.unregister())))
         .catch(() => {});

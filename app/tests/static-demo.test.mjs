@@ -17,13 +17,19 @@ test("a demo estática funciona sem backend e mantém os dados na sessão", asyn
     readDist("service-worker.js"),
   ]);
 
-  assert.match(html, /demo-domain\.js[\s\S]*demo-state\.js[\s\S]*demo-api\.js[\s\S]*app\.js/);
-  assert.match(serviceWorker, /demo-api\.js/);
+  const bundleName = html.match(/src="(demo-app-[a-f0-9]{12}\.js)"/)?.[1];
+  assert.ok(bundleName, "o HTML deve carregar um bundle versionado");
+  const bundle = await readDist(bundleName);
+  assert.doesNotMatch(html, /<script defer src="config\.js"/);
+  assert.match(html, /Carregando demonstração/);
+  assert.match(serviceWorker, /registration\.unregister/);
   assert.match(domain, /^\(\(\) => \{/);
   assert.match(demoState, /^\(\(\) => \{/);
 
-  // Todos os scripts devem compilar juntos sem colisões no escopo global.
-  assert.doesNotThrow(() => new vm.Script(`${config}\n${domain}\n${demoState}\n${demoApi}\n${app}`));
+  // Um único bundle evita ordem incorreta, versões misturadas e colisões globais.
+  assert.doesNotThrow(() => new vm.Script(bundle));
+  assert.match(bundle, /serviceWorkerEnabled: false/);
+  assert.match(bundle, /dataset\.focusFlowReady = "true"/);
 
   const session = new Map();
   const context = vm.createContext({
@@ -48,7 +54,8 @@ test("a demo estática funciona sem backend e mantém os dados na sessão", asyn
     fetch: async () => { throw new Error("A demo tentou acessar a rede."); },
   });
 
-  for (const source of [config, domain, demoState, demoApi]) vm.runInContext(source, context);
+  const demoRuntime = bundle.split("/* FocusFlow UI */")[0];
+  vm.runInContext(demoRuntime, context);
 
   const initialResponse = await context.fetch("/api/state");
   const initial = await initialResponse.json();
