@@ -17,7 +17,7 @@ permanecem aqui para mostrar a trajetória técnica do FocusFlow.
 
 ## Próximas melhorias
 
-- [ ] Publicar uma URL de demonstração protegida contra abuso
+- [x] Publicar uma demonstração estática sem dados reais ou backend público
 - [ ] Adicionar testes ponta a ponta dos fluxos principais
 - [ ] Fazer auditoria WCAG e documentar acessibilidade
 - [ ] Ampliar atalhos de teclado no desktop

@@ -5,6 +5,8 @@
 
 ![Capa do FocusFlow](app/docs/assets/focusflow-social-preview.png)
 
+[**▶ Abrir demonstração online**](https://ninex9x.github.io/focusflow/)
+
 Aplicativo de controle de tempo e projetos com clientes para web/PWA, Windows,
 Linux e Android. O backend centraliza regras de negócio, sincronização e
 persistência em SQLite.
@@ -45,8 +47,6 @@ npm install
 npm run dev
 ```
 
-Abra [http://127.0.0.1:3000](http://127.0.0.1:3000).
-
 O comando inicia a interface, a API e o SQLite. O banco local é criado em
 `data/focusflow.sqlite`, diretório ignorado pelo Git. Não é necessário criar um
 arquivo `.env`, configurar Cloudflare ou instalar um banco separado.
@@ -66,6 +66,12 @@ O modo local:
 O modo demonstração preenche o produto com projetos e registros fictícios. Cada
 navegador recebe uma sessão anônima isolada, armazenada somente em memória; tudo
 é apagado quando o servidor reinicia.
+
+[**Experimentar agora no navegador**](https://ninex9x.github.io/focusflow/)
+
+A demonstração pública funciona sem instalação e mantém alterações somente na
+aba atual. Os comandos abaixo servem apenas para quem quiser executar a mesma
+demo localmente durante o desenvolvimento.
 
 No PowerShell:
 

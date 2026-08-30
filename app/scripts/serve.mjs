@@ -5,7 +5,7 @@ import { extname, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
-const webRoot = resolve(root, "web");
+const webRoot = resolve(process.env.STATIC_ROOT || resolve(root, "web"));
 const port = Number(process.env.PORT || 4173);
 const contentTypes = {
   ".css": "text/css; charset=utf-8",

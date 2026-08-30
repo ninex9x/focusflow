@@ -68,10 +68,11 @@ frontend.
 
 ### Demo sem dados reais
 
-`DEMO_MODE=true` usa um banco em memória e cria uma sessão anônima isolada por
-navegador. Os projetos e lançamentos são fictícios, alterações desaparecem ao
-reiniciar o servidor e “Redefinir dados” restaura a vitrine original. O backend
-também limita a quantidade de sessões simultâneas mantidas em memória.
+No servidor, `DEMO_MODE=true` usa um banco em memória e cria uma sessão anônima
+isolada por navegador. A edição publicada no GitHub Pages executa o mesmo domínio
+diretamente no navegador e guarda alterações apenas em `sessionStorage`. Nos dois
+casos, os projetos e lançamentos são fictícios e “Redefinir dados” restaura a
+vitrine original. Nenhuma ação da demo pública envia dados para um backend.
 
 ## Segurança e privacidade
 
@@ -102,6 +103,6 @@ executa testes, build web e gera APK, EXE, AppImage e DEB.
 
 ## Próximos passos
 
-O plano de evolução está em [ROADMAP.md](ROADMAP.md). As prioridades são
-publicar uma demo hospedada, ampliar testes de acessibilidade e adicionar uma
-camada de testes ponta a ponta para os fluxos críticos.
+O plano de evolução está em [ROADMAP.md](ROADMAP.md). As prioridades são ampliar
+testes de acessibilidade e adicionar uma camada de testes ponta a ponta para os
+fluxos críticos.
